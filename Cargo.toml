@@ -1,0 +1,10 @@
+[package]
+name = "square_game"
+version = "0.1.0"
+authors = ["loicngr <pro.nogierloic@gmail.com>"]
+edition = "2018"
+build = "build.rs"
+
+[dependencies.sdl2]
+git = "https://github.com/rust-sdl2/rust-sdl2"
+default-features = false
