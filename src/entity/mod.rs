@@ -2,6 +2,7 @@ use sdl2::render::WindowCanvas;
 use crate::{COLOR_BACKGROUND};
 use sdl2::rect::Rect;
 use sdl2::pixels::Color;
+use rand::Rng;
 
 // Entity direction enumeration
 #[derive(Debug)]
@@ -14,7 +15,7 @@ pub enum EntityDirection {
 }
 
 // Entity location structure
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct EntityLocation {
     pub x: i32,
     pub y: i32,
@@ -49,7 +50,7 @@ pub struct Entity {
 impl EntityLocation {
 
     // Check if entity is location equal to other entity
-    fn _equal_to(&self, entity: &Entity) -> bool {
+    pub fn equal_to(&self, entity: &Entity) -> bool {
         let is_equal =
             if entity.location.x == self.x && entity.location.y == self.y {
                 true
@@ -57,6 +58,28 @@ impl EntityLocation {
                 false
             };
         is_equal
+    }
+
+    pub fn generate_location(&mut self, player_position: EntityLocation, screen_width: i32, screen_height: i32, entity_scale: i32) -> Vec<i32> {
+        let mut rng = rand::thread_rng();
+        let old_location = vec![self.x, self.y]; // Save location before update it
+
+        loop {
+            let generated_x = rng.gen_range(0, screen_width - entity_scale); // Generate number in x
+            let generated_y = rng.gen_range(0, screen_height - entity_scale); // Generate number in y
+
+            // If x and y number is in the grid
+            if generated_x % entity_scale == 0 && generated_y % entity_scale == 0 {
+                // If is not a player_entity location
+                if generated_x != player_position.x || generated_y != player_position.y {
+                    self.x = generated_x;
+                    self.y = generated_y;
+                    break;
+                }
+            }
+        }
+
+        old_location
     }
 }
 
@@ -68,8 +91,13 @@ impl Entity {
         self.location.y = y;
     }
 
+    pub fn update_last_location(&mut self, x: i32, y: i32) {
+        self.last_location.x = x;
+        self.last_location.y = y;
+    }
+
     // Draw entity in Canvas
-    fn draw_entity(&self, canvas: &mut WindowCanvas) {
+    pub(crate) fn draw_entity(&self, canvas: &mut WindowCanvas) {
         let entity_rect = Rect::new(self.location.x, self.location.y, self.size.width, self.size.height);
         let entity_color = Color::RGBA(self.color.r, self.color.g, self.color.b, self.color.a);
 
@@ -161,8 +189,11 @@ impl Entity {
             };
         in_window
     }
-}
 
+    pub fn check_collision_entity(&self, entity: &Entity) -> bool {
+        self.location.equal_to(entity)
+    }
+}
 
 // Function to create my entities
 // Return a vector with entities

@@ -5,6 +5,10 @@ authors = ["loicngr <pro.nogierloic@gmail.com>"]
 edition = "2018"
 build = "build.rs"
 
+
+[dependencies]
+rand = "0.7.3"
+
 [dependencies.sdl2]
 git = "https://github.com/rust-sdl2/rust-sdl2"
 default-features = false

@@ -9,10 +9,17 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use crate::entity::EntityDirection;
 use crate::core::{GameWorld, GameWindow};
+use std::borrow::{Borrow, BorrowMut};
+use rand::Rng;
+use sdl2::render::WindowCanvas;
 
 const COLOR_BACKGROUND: Color = Color::RGBA(0, 0, 0, 1);
 const PLAYER_ENTITY_ID: &str = "entity_1";
+const WINDOW_TITLE: &str = "Square game";
 
+fn update_window_title(canvas: &mut WindowCanvas, player_point: i32) {
+    canvas.window_mut().set_title(format!("{} - {}", WINDOW_TITLE, player_point).as_str()).unwrap();
+}
 
 // Main function
 fn main() {
@@ -21,7 +28,7 @@ fn main() {
 
         let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
-    let window = video_subsystem.window("rust-sdl2 demo", 800, 600)
+    let window = video_subsystem.window(WINDOW_TITLE, 800, 600)
         .position_centered()
         .build()
         .unwrap();
@@ -42,10 +49,11 @@ fn main() {
         }
 
     };
-    game_world.draw_entities(vec![PLAYER_ENTITY_ID], &mut canvas);
+    game_world.draw_entities(vec![PLAYER_ENTITY_ID, "entity_2"], &mut canvas);
 
     let mut event_pump = sdl_context.event_pump().unwrap();
 
+    let mut player_point = 0;
     'game_loop: loop {
         game_world.window.set(&canvas);
 
@@ -91,6 +99,29 @@ fn main() {
 
         // Update entity direction and draw it in canvas
         entity_player.update_direction(&mut canvas);
+
+
+        let entity_player_ref = game_world.get_entity_ref(PLAYER_ENTITY_ID);
+        let entity_enemy_ref = game_world.get_entity_ref("entity_2");
+        let entity_collision = entity_player_ref.check_collision_entity(&entity_enemy_ref);
+
+        if entity_collision {
+            let entity_player_location = entity_player_ref.location.clone();
+            let entity_enemy = game_world.get_entity("entity_2");
+            let entity_old_location = entity_enemy.location.generate_location(entity_player_location,
+                                                                              game_window_size_x,
+                                                                              game_window_size_y,
+                                                                                entity_enemy.movement_scale
+                                                                                        );
+            entity_enemy.update_last_location(entity_old_location[0], entity_old_location[1]);
+            entity_enemy.draw_entity(&mut canvas);
+
+            let entity_player = game_world.get_entity(PLAYER_ENTITY_ID);
+            entity_player.draw_entity(&mut canvas);
+
+            player_point = (player_point + 1);
+            update_window_title(&mut canvas, player_point);
+        }
 
         canvas.present();
         ::std::thread::sleep(Duration::new(0,  1_000_000_000 / 60 ));

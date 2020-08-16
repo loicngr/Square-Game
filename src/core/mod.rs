@@ -1,4 +1,4 @@
-use crate::entity::Entity;
+use crate::entity::{Entity, EntityLocation};
 use sdl2::render::WindowCanvas;
 use sdl2::rect::Rect;
 use sdl2::pixels::Color;
@@ -45,6 +45,18 @@ impl GameWorld {
             canvas.present();
         }
     }
+/*
+    pub fn draw_entity_random_location(&mut self, entity_id: &str, entity_player_location: &EntityLocation, canvas: &mut WindowCanvas) {
+        let entity = self.get_entity_ref(entity_id); // Get entity
+
+        let entity_rect = Rect::new(entity.location.x + 5, entity.location.y + 100, entity.size.width, entity.size.height);
+        let entity_color = Color::RGBA(entity.color.r, entity.color.g, entity.color.b, entity.color.a);
+
+        canvas.set_draw_color(entity_color); // Draw entity with its color
+        canvas.draw_rect(entity_rect).unwrap(); // Draw rect with entity size
+        canvas.fill_rect(entity_rect).unwrap(); // Fill rect with entity color
+        canvas.present();
+    }*/
 }
 
 impl GameWindow {
